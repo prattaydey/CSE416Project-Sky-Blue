@@ -40,3 +40,26 @@ export async function fetchPlayer(playerId) {
 
   return res.json();
 }
+
+export async function savePlayerNotes(playerId, notes) {
+  const res = await fetch(`${BACKEND_URL}/api/players/${encodeURIComponent(playerId)}/notes`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ notes }),
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      throw new Error("Unauthorized — check your API key.");
+    }
+    if (res.status === 404) {
+      throw new Error("Player not found.");
+    }
+    throw new Error(`Server error (${res.status})`);
+  }
+
+  return res.json();
+}
