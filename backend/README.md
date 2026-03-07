@@ -1,5 +1,7 @@
 # DraftKit API Backend (MVP)
 
+This service is the standalone, licensable DraftKit API product.
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in:
@@ -8,6 +10,7 @@ Copy `.env.example` to `.env` and fill in:
 - `MONGODB_URI`
 - `EXTERNAL_API_KEY`
 - `APP_CLIENT_KEY`
+- `CORS_ORIGIN`
 
 ## Run locally
 
@@ -24,6 +27,11 @@ npm run dev
 Requires header:
 
 `Authorization: Bearer <APP_CLIENT_KEY>`
+
+## Product boundary
+- This API is intentionally app-agnostic.
+- Any third-party client can consume it with a valid license key.
+- DraftKit frontend is one licensed consumer, not a hard dependency.
 
 ## Quick verification with curl
 
