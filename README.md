@@ -1,6 +1,6 @@
 # DraftKit App (Frontend)
 
-This is the DraftKit web client that consumes the standalone [DraftKit API](https://github.com/prattaydey/CSE416Project-Sky-Blue-API)
+This is the DraftKit web client that consumes the standalone [DraftKit API](https://github.com/prattaydey/CSE416Project-Sky-Blue-API) with API key in authorization header of HTTP request.
 
 ## Routes
 - `/` -> available players list
@@ -22,6 +22,3 @@ npm run dev
 ```bash
 npm run build
 ```
-
-## Product boundary
-This app does not contain backend logic. It authenticates to the external DraftKit API with a bearer key and renders returned data.
