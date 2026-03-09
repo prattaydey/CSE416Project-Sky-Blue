@@ -9,7 +9,8 @@ This is the DraftKit web client that consumes the standalone [DraftKit API](http
 ## Required environment variables
 Create `.env` from `.env.example`:
 
-- `VITE_BACKEND_URL` (DraftKit API base URL)
+- `VITE_API_BASE_URL` (DraftKit API base URL for player data)
+- `VITE_CLIENT_BACKEND_URL` (client app backend URL for users/notes)
 - `VITE_APP_CLIENT_KEY` (must match API `APP_CLIENT_KEY`)
 
 ## Run locally
