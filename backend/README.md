@@ -12,6 +12,7 @@ Copy `.env.example` to `.env`:
 
 - `PORT` (optional, default `3001`)
 - `MONGODB_URI`
+- `CORS_ORIGIN`
 
 ## Run
 ```bash
@@ -21,4 +22,5 @@ npm run dev --prefix backend
 
 ## Current routes
 - `POST /api/users/register`
+- `GET /api/users/:username/notes/:playerId`
 - `PUT /api/users/:username/notes/:playerId` (username will be removed after auth implemented)

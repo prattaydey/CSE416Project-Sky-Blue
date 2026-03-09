@@ -5,6 +5,7 @@ This is the DraftKit web client that consumes the standalone [DraftKit API](http
 ## Routes
 - `/` -> available players list
 - `/player/:playerId` -> player detail screen
+- `/player/:playerId?username=<username>` -> loads/saves notes for that user from client backend
 
 ## Required environment variables
 Create `.env` from `.env.example`:
