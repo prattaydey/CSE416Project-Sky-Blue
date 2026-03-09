@@ -34,7 +34,19 @@ async function start() {
   });
 }
 
-start().catch((error) => {
-  console.error("Failed to start backend:", error);
-  process.exit(1);
-});
+module.exports = async (req, res) => {
+  try {
+    await connectMongo(env.mongodbUri);
+    return app(req, res);
+  } catch (error) {
+    console.error("Failed to handle request:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+if (!process.env.VERCEL) {
+  start().catch((error) => {
+    console.error("Failed to start backend:", error);
+    process.exit(1);
+  });
+}
