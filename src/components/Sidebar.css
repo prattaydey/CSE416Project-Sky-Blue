@@ -118,3 +118,16 @@
   justify-content: center;
   color: #fff;
 }
+
+.logout-btn {
+  border: none;
+  background: transparent;
+  margin-top: 20px;
+  color: var(--text);
+  transition: all 0.15s;
+}
+
+.logout-btn:hover {
+  background: var(--sidebar-active);
+  color: #c41c1c;
+}

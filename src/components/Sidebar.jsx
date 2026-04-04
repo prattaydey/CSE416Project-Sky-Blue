@@ -1,9 +1,17 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import "./Sidebar.css";
 
 const SAMPLE_TEAMS = ["Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6"];
 
 export default function Sidebar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -38,8 +46,12 @@ export default function Sidebar() {
           <div className="avatar">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM3 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </div>
-          <span>John Doe</span>
+          <span>{user?.username || "Guest"}</span>
         </div>
+        <button onClick={handleLogout} className="nav-item logout-btn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 2H13a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10M6 12l4-4m0 0l-4-4m4 4H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Logout
+        </button>
       </div>
     </aside>
   );

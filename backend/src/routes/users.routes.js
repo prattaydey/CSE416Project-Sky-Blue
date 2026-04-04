@@ -1,5 +1,8 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
+const authMiddleware = require("../middleware/auth");
+const env = require("../config/env");
 
 const router = express.Router();
 
@@ -34,9 +37,62 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-router.get("/:username/notes/:playerId", async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
+  try {
+    const { username, password } = req.body || {};
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "username and password are required" });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isPasswordCorrect = await user.verifyPassword(password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, username: user.username },
+      env.jwtSecret,
+      { expiresIn: env.jwtExpiry }
+    );
+
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: { id: user._id, username: user.username },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/verify-token", (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Token missing or invalid" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, env.jwtSecret);
+    res.status(200).json(decoded);
+  } catch (err) {
+    res.status(401).json({ message: "Invalid or expired token" });
+  }
+});
+
+router.get("/:username/notes/:playerId", authMiddleware, async (req, res, next) => {
   try {
     const { username, playerId } = req.params;
+
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
 
     const user = await User.findOne({ username });
     if (!user) {
@@ -55,10 +111,14 @@ router.get("/:username/notes/:playerId", async (req, res, next) => {
   }
 });
 
-router.put("/:username/notes/:playerId", async (req, res, next) => {
+router.put("/:username/notes/:playerId", authMiddleware, async (req, res, next) => {
   try {
     const { username, playerId } = req.params;
     const { note } = req.body || {};
+
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
 
     if (typeof note !== "string") {
       return res.status(400).json({ error: "note must be a string" });
