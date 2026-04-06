@@ -86,6 +86,28 @@ router.post("/verify-token", (req, res) => {
   }
 });
 
+router.get("/:username/notes", authMiddleware, async (req, res, next) => {
+  try {
+    const { username } = req.params;
+
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.json({
+      username: user.username,
+      playerNotes: serializePlayerNotes(user.playerNotes),
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get("/:username/notes/:playerId", authMiddleware, async (req, res, next) => {
   try {
     const { username, playerId } = req.params;

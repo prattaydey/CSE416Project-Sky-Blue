@@ -134,3 +134,13 @@ export async function fetchUserPlayerNote(username, playerId) {
     },
   });
 }
+
+export async function fetchAllUserNotes(username) {
+  return requestJson(CLIENT_BACKEND_URL, `/api/users/${encodeURIComponent(username)}/notes`, {
+    method: "GET",
+    userAuth: true,
+    statusMessages: {
+      404: "User not found.",
+    },
+  });
+}
