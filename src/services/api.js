@@ -144,3 +144,11 @@ export async function fetchAllUserNotes(username) {
     },
   });
 }
+
+export async function createDraft(draftPayload) {
+  return requestJson(CLIENT_BACKEND_URL, "/api/drafts", {
+    method: "POST",
+    userAuth: true,
+    body: draftPayload,
+  });
+}

@@ -1,0 +1,185 @@
+//AI generated CSS for DraftSetupPage.jsx
+.draft-setup-page {
+  display: grid;
+  gap: 24px;
+}
+
+.draft-setup-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-button {
+  border: none;
+  background: transparent;
+  color: #0e1130;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.draft-setup-header h2 {
+  margin: 0 0 8px;
+}
+
+.draft-setup-header p {
+  margin: 0;
+  color: #5b6372;
+}
+
+.draft-setup-form {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+}
+
+.draft-settings-card,
+.draft-summary-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+}
+
+.draft-settings-card h3,
+.draft-summary-card h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.draft-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.draft-settings-grid label,
+.roster-input-item,
+.team-names-grid label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.draft-settings-grid input,
+.draft-settings-grid select,
+.roster-input-item input,
+.team-names-grid input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+}
+
+.draft-settings-grid select {
+  appearance: none;
+}
+
+.draft-roster-section {
+  margin-top: 32px;
+}
+
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.team-names-section {
+  margin-top: 32px;
+}
+
+.team-names-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.draft-summary-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.success-message,
+.error-message {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+}
+
+.success-message {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.primary-btn,
+.secondary-btn {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.secondary-btn {
+  background: #f8fafc;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+@media (max-width: 900px) {
+  .draft-setup-form {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-grid,
+  .team-names-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .draft-settings-grid,
+  .roster-grid,
+  .team-names-grid {
+    grid-template-columns: 1fr;
+  }
+}

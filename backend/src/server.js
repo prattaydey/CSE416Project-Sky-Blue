@@ -3,6 +3,8 @@ const cors = require("cors");
 const env = require("./config/env");
 const { connectMongo } = require("./db/mongo");
 const usersRoutes = require("./routes/users.routes");
+const draftsRoutes = require("./routes/drafts.routes");
+const teamsRoutes = require("./routes/teams.routes");
 
 const app = express();
 
@@ -21,6 +23,8 @@ const corsConfig = {
 app.use(cors(corsConfig));
 app.use(express.json());
 app.use("/api/users", usersRoutes);
+app.use("/api/drafts", draftsRoutes);
+app.use("/api/teams", teamsRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

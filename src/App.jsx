@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import PlayerPage from "./pages/PlayerPage";
 import HomePage from "./pages/HomePage";
+import DraftSetupPage from "./pages/DraftSetupPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { AuthProvider } from "./context/AuthContext";
@@ -22,6 +23,7 @@ export default function App() {
           }
         >
           <Route path="/" element={<HomePage />} />
+          <Route path="/draft-setup" element={<DraftSetupPage />} />
           <Route path="/player/:playerId" element={<PlayerPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

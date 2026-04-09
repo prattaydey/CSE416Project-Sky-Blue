@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
+const Draft = require("../models/draft.model");
 const authMiddleware = require("../middleware/auth");
 const env = require("../config/env");
 
@@ -64,8 +65,40 @@ router.post("/login", async (req, res, next) => {
     return res.status(200).json({
       message: "Login successful",
       token,
-      user: { id: user._id, username: user.username },
+      user: { id: user._id, username: user.username, draft: user.draft },
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+//ai generated
+router.put("/:username/draft", authMiddleware, async (req, res, next) => {
+  try {
+    const { username } = req.params;
+    const { draftId } = req.body || {};
+
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    if (!draftId || typeof draftId !== "string" || draftId.trim() === "") {
+      return res.status(400).json({ error: "draftId is required" });
+    }
+
+    const draftExists = await Draft.exists({ _id: draftId });
+    if (!draftExists) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.draft = draftId;
+    await user.save();
+
+    return res.json({ username: user.username, draft: user.draft });
   } catch (error) {
     return next(error);
   }
