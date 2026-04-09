@@ -80,7 +80,6 @@ router.post("/", authMiddleware, async (req, res, next) => {
       name: teamNames?.[index] || `Team ${index + 1}`,
       draft: draftDoc._id,
       budgetRemaining: budgetPerTeam,
-      amountSpent: 0,
       roster: [],
     }));
 

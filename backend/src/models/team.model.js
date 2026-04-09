@@ -27,11 +27,6 @@ const teamSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    amountSpent: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
     roster: {
       type: [rosterItemSchema],
       default: [],

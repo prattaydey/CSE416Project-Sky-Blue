@@ -19,7 +19,6 @@ router.get("/:teamId", async (req, res, next) => {
       name: team.name,
       draft: team.draft,
       budgetRemaining: team.budgetRemaining,
-      amountSpent: team.amountSpent,
       roster: team.roster,
     });
   } catch (error) {
