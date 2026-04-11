@@ -1,5 +1,6 @@
 //Ai generated frontend/src/pages/DraftSetupPage.jsx
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { createDraft } from "../services/api";
 import "./DraftSetupPage.css";
@@ -12,7 +13,8 @@ const defaultRosterCounts = DEFAULT_POSITIONS.reduce((acc, pos) => {
 }, {});
 
 export default function DraftSetupPage() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const [type, setType] = useState("Both");
   const [numberOfTeams, setNumberOfTeams] = useState(6);
   const [budgetPerTeam, setBudgetPerTeam] = useState(260);
@@ -101,7 +103,7 @@ export default function DraftSetupPage() {
     setSubmitting(true);
 
     try {
-      await createDraft({
+      const data = await createDraft({
         type,
         numberOfTeams,
         budgetPerTeam,
@@ -109,7 +111,11 @@ export default function DraftSetupPage() {
         teamNames,
       });
 
-      setMessage("Draft created successfully and linked to your account.");
+      if (data?.draft?._id) {
+        updateUser({ draft: data.draft._id });
+      }
+
+      navigate("/");
     } catch (err) {
       setError(err.message || "Unable to save draft settings.");
     } finally {

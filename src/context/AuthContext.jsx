@@ -33,6 +33,10 @@ export const AuthProvider = ({ children }) => {
     setError(null);
   };
 
+  const updateUser = (updatedValues) => {
+    setUser((prevUser) => (prevUser ? { ...prevUser, ...updatedValues } : prevUser));
+  };
+
   const logout = () => {
     localStorage.removeItem("authToken");
     setUser(null);
@@ -48,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    updateUser,
     logout,
     getToken,
     isAuthenticated: !!user,
