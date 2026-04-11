@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { createDraft } from "../services/api";
 import "./DraftSetupPage.css";
 
-const DEFAULT_POSITIONS = ["C", "1B", "2B", "3B", "SS", "OF", "DH", "SP", "RP"];
+const DEFAULT_POSITIONS = ["C", "1B", "2B", "3B", "SS", "OF", "DH", "P"];
 
 const defaultRosterCounts = DEFAULT_POSITIONS.reduce((acc, pos) => {
   acc[pos] = 0;

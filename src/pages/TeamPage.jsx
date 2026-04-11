@@ -108,7 +108,7 @@ export default function TeamPage() {
     return (
       <div className="team-page">
         <div className="team-error">
-          <button className="back-btn" onClick={() => navigate(-1)}>
+          <button className="back-btn" onClick={() => navigate("/", { replace: true })}>
             ← Back
           </button>
           <p>{error}</p>
@@ -120,7 +120,7 @@ export default function TeamPage() {
   return (
     <div className="team-page">
       <div className="team-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
+        <button className="back-btn" onClick={() => navigate("/", { replace: true })}>
           ← Back
         </button>
         <div>

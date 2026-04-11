@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { fetchDraftById } from "../services/api";
 import "./Sidebar.css";
@@ -10,6 +10,7 @@ export default function Sidebar() {
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [teamsError, setTeamsError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +48,7 @@ export default function Sidebar() {
     return () => {
       cancelled = true;
     };
-  }, [user?.draft]);
+  }, [user?.draft, location.pathname]);
 
   const handleLogout = () => {
     logout();
