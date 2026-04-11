@@ -116,7 +116,7 @@ export default function TeamPage() {
       </div>
     );
   }
-
+// Ai generated 
   return (
     <div className="team-page">
       <div className="team-header">

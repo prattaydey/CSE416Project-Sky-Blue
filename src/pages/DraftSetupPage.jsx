@@ -6,11 +6,16 @@ import { createDraft } from "../services/api";
 import "./DraftSetupPage.css";
 
 const DEFAULT_POSITIONS = ["C", "1B", "2B", "3B", "SS", "OF", "DH", "P"];
+const HITTER_STATS = ["AVG", "HR", "RBI", "SB", "OBP", "SLG", "H", "R", "RB", "OBS"];
+const PITCHER_STATS = ["ERA", "W", "SV", "K", "WHIP", "IP"];
 
 const defaultRosterCounts = DEFAULT_POSITIONS.reduce((acc, pos) => {
   acc[pos] = 0;
   return acc;
 }, {});
+
+const defaultHitterStats = [...HITTER_STATS];
+const defaultPitcherStats = [...PITCHER_STATS];
 
 export default function DraftSetupPage() {
   const navigate = useNavigate();
@@ -20,6 +25,8 @@ export default function DraftSetupPage() {
   const [budgetPerTeam, setBudgetPerTeam] = useState(260);
   const [rosterCounts, setRosterCounts] = useState(defaultRosterCounts);
   const [teamNames, setTeamNames] = useState(Array.from({ length: 6 }, () => ""));
+  const [selectedHitterStats, setSelectedHitterStats] = useState(defaultHitterStats);
+  const [selectedPitcherStats, setSelectedPitcherStats] = useState(defaultPitcherStats);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -51,6 +58,22 @@ export default function DraftSetupPage() {
     setRosterCounts((previous) => ({ ...previous, [position]: count }));
   };
 
+  const handleToggleHitterStat = (stat) => {
+    setSelectedHitterStats((previous) =>
+      previous.includes(stat)
+        ? previous.filter((item) => item !== stat)
+        : [...previous, stat]
+    );
+  };
+
+  const handleTogglePitcherStat = (stat) => {
+    setSelectedPitcherStats((previous) =>
+      previous.includes(stat)
+        ? previous.filter((item) => item !== stat)
+        : [...previous, stat]
+    );
+  };
+
   const handleTeamNameChange = (index, value) => {
     setTeamNames((previous) => {
       const next = [...previous];
@@ -65,6 +88,8 @@ export default function DraftSetupPage() {
     setBudgetPerTeam(260);
     setRosterCounts(defaultRosterCounts);
     setTeamNames(Array.from({ length: 6 }, () => ""));
+    setSelectedHitterStats(defaultHitterStats);
+    setSelectedPitcherStats(defaultPitcherStats);
     setMessage("");
     setError("");
   };
@@ -100,6 +125,11 @@ export default function DraftSetupPage() {
       return;
     }
 
+    if (selectedHitterStats.length === 0 || selectedPitcherStats.length === 0) {
+      setError("Select at least one hitter stat and one pitcher stat for your league.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -109,6 +139,10 @@ export default function DraftSetupPage() {
         budgetPerTeam,
         rosterSlots,
         teamNames,
+        statCategories: {
+          hitters: selectedHitterStats,
+          pitchers: selectedPitcherStats,
+        },
       });
 
       if (data?.draft?._id) {
@@ -181,6 +215,44 @@ export default function DraftSetupPage() {
                   />
                 </label>
               ))}
+            </div>
+          </div>
+
+          <div className="draft-stat-categories-section">
+            <h4>Stat Categories</h4>
+            <p>Select the stats your league will track for hitters and pitchers.</p>
+            <div className="stat-category-grid">
+              <div className="stat-category-group">
+                <h5>Hitters</h5>
+                <div className="stats-checkbox-grid">
+                  {HITTER_STATS.map((stat) => (
+                    <label key={stat} className="stat-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedHitterStats.includes(stat)}
+                        onChange={() => handleToggleHitterStat(stat)}
+                      />
+                      {stat}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="stat-category-group">
+                <h5>Pitchers</h5>
+                <div className="stats-checkbox-grid">
+                  {PITCHER_STATS.map((stat) => (
+                    <label key={stat} className="stat-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedPitcherStats.includes(stat)}
+                        onChange={() => handleTogglePitcherStat(stat)}
+                      />
+                      {stat}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/:teamId", async (req, res, next) => {
   try {
     const { teamId } = req.params;
-    const team = await Team.findById(teamId).populate("draft", "rosterSlots numberOfTeams budgetPerTeam type");
+    const team = await Team.findById(teamId).populate("draft", "rosterSlots numberOfTeams budgetPerTeam type statCategories");
 
     if (!team) {
       return res.status(404).json({ error: "Team not found" });
@@ -25,6 +25,7 @@ router.get("/:teamId", async (req, res, next) => {
             numberOfTeams: team.draft.numberOfTeams,
             budgetPerTeam: team.draft.budgetPerTeam,
             rosterSlots: team.draft.rosterSlots,
+            statCategories: team.draft.statCategories,
           }
         : null,
       budgetRemaining: team.budgetRemaining,

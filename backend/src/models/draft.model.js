@@ -8,6 +8,14 @@ const rosterSlotSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const statCategoriesSchema = new mongoose.Schema(
+  {
+    hitters: { type: [String], default: [] },
+    pitchers: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
 const draftSchema = new mongoose.Schema(
   {
     type: {
@@ -29,6 +37,11 @@ const draftSchema = new mongoose.Schema(
       type: [rosterSlotSchema],
       required: true,
       default: [],
+    },
+    statCategories: {
+      type: statCategoriesSchema,
+      required: true,
+      default: () => ({ hitters: [], pitchers: [] }),
     },
   },
   { timestamps: true, versionKey: false }

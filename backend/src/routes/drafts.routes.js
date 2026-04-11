@@ -32,8 +32,33 @@ function normalizeRosterSlots(rosterSlots) {
   });
 }
 
+function normalizeStatCategories(statCategories) {
+  if (!statCategories || typeof statCategories !== "object") {
+    return null;
+  }
+
+  const normalizeList = (list) => {
+    if (!Array.isArray(list) || list.length === 0) {
+      return null;
+    }
+
+    const normalized = Array.from(new Set(
+      list
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter((item) => item !== "")
+    ));
+
+    return normalized.length > 0 ? normalized : null;
+  };
+
+  const hitters = normalizeList(statCategories.hitters);
+  const pitchers = normalizeList(statCategories.pitchers);
+
+  return hitters && pitchers ? { hitters, pitchers } : null;
+}
+
 router.post("/", authMiddleware, async (req, res, next) => {
-  const { type, numberOfTeams, budgetPerTeam, rosterSlots, teamNames } = req.body || {};
+  const { type, numberOfTeams, budgetPerTeam, rosterSlots, teamNames, statCategories } = req.body || {};
 
   if (!type || !["AL", "NL", "Both"].includes(type)) {
     return res.status(400).json({ error: "type must be one of AL, NL, Both" });
@@ -50,6 +75,13 @@ router.post("/", authMiddleware, async (req, res, next) => {
   const normalizedSlots = normalizeRosterSlots(rosterSlots);
   if (!normalizedSlots || normalizedSlots.some((slot) => slot === null)) {
     return res.status(400).json({ error: "rosterSlots must be an array of { position, count } objects" });
+  }
+
+  const normalizedStatCategories = normalizeStatCategories(statCategories);
+  if (!normalizedStatCategories) {
+    return res.status(400).json({
+      error: "statCategories must include non-empty hitters and pitchers arrays",
+    });
   }
 
   if (teamNames !== undefined) {
@@ -69,6 +101,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
           numberOfTeams,
           budgetPerTeam,
           rosterSlots: normalizedSlots,
+          statCategories: normalizedStatCategories,
         },
       ],
       { session }
