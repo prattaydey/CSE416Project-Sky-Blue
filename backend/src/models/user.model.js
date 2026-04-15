@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema(
       maxlength: 50,
     },
     passwordHash: { type: String, required: true },
-    draft: {
+    drafts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Draft" }],
+    activeDraft: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Draft",
       default: null,

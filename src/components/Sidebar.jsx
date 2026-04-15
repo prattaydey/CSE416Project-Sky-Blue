@@ -1,22 +1,66 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { fetchDraftById } from "../services/api";
+import { fetchDraftById, fetchUserDrafts, selectUserDraft } from "../services/api";
 import "./Sidebar.css";
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const [drafts, setDrafts] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [teamsError, setTeamsError] = useState("");
+  const [loadingDrafts, setLoadingDrafts] = useState(false);
+  const [draftsError, setDraftsError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
-    //AI generated - Load teams for user's draft if available
+
+    async function loadDrafts() {
+      if (!user?.username) {
+        setDrafts([]);
+        setDraftsError("");
+        setLoadingDrafts(false);
+        return;
+      }
+
+      setLoadingDrafts(true);
+      setDraftsError("");
+
+      try {
+        const data = await fetchUserDrafts(user.username);
+        if (!cancelled) {
+          setDrafts(Array.isArray(data?.drafts) ? data.drafts : []);
+          if (data?.activeDraft && user?.activeDraft !== data.activeDraft) {
+            updateUser({ activeDraft: data.activeDraft });
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setDrafts([]);
+          setDraftsError("Unable to load your drafts.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingDrafts(false);
+        }
+      }
+    }
+
+    loadDrafts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.username]);
+
+  useEffect(() => {
+    let cancelled = false;
+    //AI generated - Load teams for user's selected draft if available
     async function loadTeams() {
-      if (!user?.draft) {
+      if (!user?.activeDraft) {
         setTeams([]);
         setTeamsError("");
         setLoadingTeams(false);
@@ -27,7 +71,7 @@ export default function Sidebar() {
       setTeamsError("");
 
       try {
-        const data = await fetchDraftById(user.draft);
+        const data = await fetchDraftById(user.activeDraft);
         if (!cancelled) {
           setTeams(Array.isArray(data?.teams) ? data.teams : []);
         }
@@ -48,7 +92,7 @@ export default function Sidebar() {
     return () => {
       cancelled = true;
     };
-  }, [user?.draft, location.pathname]);
+  }, [user?.activeDraft, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -75,6 +119,50 @@ export default function Sidebar() {
       <div className="sidebar-section">
         <h3 className="sidebar-section-title">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1a3 3 0 0 0-3 3v2a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3ZM3 13c0-2.21 2.24-4 5-4s5 1.79 5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          Drafts
+        </h3>
+        {loadingDrafts ? (
+          <span className="nav-item sub-item">Loading drafts...</span>
+        ) : draftsError ? (
+          <span className="nav-item sub-item">{draftsError}</span>
+        ) : drafts.length > 0 ? (
+          <label className="draft-select-label">
+            <span className="draft-select-text">Selected Draft</span>
+            <select
+              value={user?.activeDraft || ""}
+              onChange={async (e) => {
+                const selectedDraft = e.target.value;
+                if (!selectedDraft) {
+                  return;
+                }
+
+                try {
+                  await selectUserDraft(user.username, selectedDraft);
+                  updateUser({ activeDraft: selectedDraft });
+                } catch (err) {
+                  setDraftsError("Unable to select that draft.");
+                }
+              }}
+              className="draft-select"
+            >
+              <option value="" disabled>
+                Pick a draft
+              </option>
+              {drafts.map((draft, index) => (
+                <option key={draft._id || index} value={draft._id}>
+                  {`Draft ${index + 1} — ${draft.type} • ${draft.numberOfTeams} teams`}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <span className="nav-item sub-item">No saved drafts yet.</span>
+        )}
+      </div>
+
+      <div className="sidebar-section">
+        <h3 className="sidebar-section-title">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1a3 3 0 0 0-3 3v2a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3ZM3 13c0-2.21 2.24-4 5-4s5 1.79 5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           Teams
         </h3>
         {loadingTeams ? (
@@ -93,7 +181,7 @@ export default function Sidebar() {
           ))
         ) : (
           <span className="nav-item sub-item">
-            {user?.draft ? "No teams available for your draft." : "No draft selected yet."}
+            {user?.activeDraft ? "No teams available for your draft." : "No draft selected yet."}
           </span>
         )}
       </div>

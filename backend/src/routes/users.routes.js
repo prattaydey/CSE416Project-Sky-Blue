@@ -31,6 +31,8 @@ router.post("/register", async (req, res, next) => {
 
     return res.status(201).json({
       username: user.username,
+      drafts: user.drafts,
+      activeDraft: user.activeDraft,
       playerNotes: serializePlayerNotes(user.playerNotes),
     });
   } catch (error) {
@@ -65,13 +67,41 @@ router.post("/login", async (req, res, next) => {
     return res.status(200).json({
       message: "Login successful",
       token,
-      user: { id: user._id, username: user.username, draft: user.draft },
+      user: {
+        id: user._id,
+        username: user.username,
+        drafts: user.drafts,
+        activeDraft: user.activeDraft,
+      },
     });
   } catch (error) {
     return next(error);
   }
 });
-//ai generated
+
+router.get("/:username/drafts", authMiddleware, async (req, res, next) => {
+  try {
+    const { username } = req.params;
+
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const user = await User.findOne({ username }).populate("drafts", "type numberOfTeams budgetPerTeam rosterSlots statCategories createdAt updatedAt");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.json({
+      username: user.username,
+      drafts: user.drafts,
+      activeDraft: user.activeDraft,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.put("/:username/draft", authMiddleware, async (req, res, next) => {
   try {
     const { username } = req.params;
@@ -95,10 +125,15 @@ router.put("/:username/draft", authMiddleware, async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    user.draft = draftId;
+    const ownsDraft = user.drafts.some((id) => id.equals?.(draftId) || id.toString() === draftId);
+    if (!ownsDraft) {
+      return res.status(403).json({ error: "Draft not associated with user" });
+    }
+
+    user.activeDraft = draftId;
     await user.save();
 
-    return res.json({ username: user.username, draft: user.draft });
+    return res.json({ username: user.username, activeDraft: user.activeDraft });
   } catch (error) {
     return next(error);
   }
@@ -113,13 +148,13 @@ router.post("/verify-token", async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, env.jwtSecret);
-    const user = await User.findById(decoded.id).select("username draft");
+    const user = await User.findById(decoded.id).select("username drafts activeDraft");
 
     if (!user) {
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    return res.status(200).json({ id: user._id, username: user.username, draft: user.draft });
+    return res.status(200).json({ id: user._id, username: user.username, drafts: user.drafts, activeDraft: user.activeDraft });
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
