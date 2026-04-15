@@ -146,7 +146,10 @@ export default function DraftSetupPage() {
       });
 
       if (data?.draft?._id) {
-        updateUser({ draft: data.draft._id });
+        const nextDrafts = Array.isArray(user?.drafts)
+          ? Array.from(new Set([...user.drafts, data.draft._id]))
+          : [data.draft._id];
+        updateUser({ drafts: nextDrafts, activeDraft: data.draft._id });
       }
 
       navigate("/app");

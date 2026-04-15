@@ -124,7 +124,10 @@ router.post("/", authMiddleware, async (req, res, next) => {
 
     await User.findByIdAndUpdate(
       req.user.id,
-      { draft: draftDoc._id },
+      {
+        $addToSet: { drafts: draftDoc._id },
+        activeDraft: draftDoc._id,
+      },
       { session }
     );
 

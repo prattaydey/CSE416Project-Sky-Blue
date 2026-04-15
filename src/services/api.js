@@ -163,6 +163,21 @@ export async function fetchDraftById(draftId) {
   });
 }
 
+export async function fetchUserDrafts(username) {
+  return requestJson(CLIENT_BACKEND_URL, `/api/users/${encodeURIComponent(username)}/drafts`, {
+    method: "GET",
+    userAuth: true,
+  });
+}
+
+export async function selectUserDraft(username, draftId) {
+  return requestJson(CLIENT_BACKEND_URL, `/api/users/${encodeURIComponent(username)}/draft`, {
+    method: "PUT",
+    userAuth: true,
+    body: { draftId },
+  });
+}
+
 export async function fetchTeamById(teamId) {
   return requestJson(CLIENT_BACKEND_URL, `/api/teams/${encodeURIComponent(teamId)}`, {
     method: "GET",
