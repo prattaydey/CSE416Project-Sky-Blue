@@ -5,7 +5,8 @@ const Team = require("../models/team.model");
 const router = express.Router();
 
 //AI generated routes
-
+// Retrieves a team's current state, including draft settings and roster details.
+// Used by the app to display team composition and league context during drafting.
 router.get("/:teamId", async (req, res, next) => {
   try {
     const { teamId } = req.params;
@@ -36,6 +37,8 @@ router.get("/:teamId", async (req, res, next) => {
   }
 });
 
+// Removes a player from a team's roster and credits their spend back to budget.
+// Supports undo/correction flows when draft picks need to be reverted.
 router.delete("/:teamId/roster/:playerId", authMiddleware, async (req, res, next) => {
   try {
     const { teamId, playerId } = req.params;

@@ -7,7 +7,9 @@ const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
-//AI generated routes
+//AI generated routes/functions
+// Validates and standardizes roster slot input so each team has a consistent draft setup.
+// This ensures roster rules are clean before creating a new draft.
 function normalizeRosterSlots(rosterSlots) {
   if (!Array.isArray(rosterSlots) || rosterSlots.length === 0) {
     return null;
@@ -57,6 +59,8 @@ function normalizeStatCategories(statCategories) {
   return hitters && pitchers ? { hitters, pitchers } : null;
 }
 
+// Creates a new draft and all associated teams in a single transaction.
+// Also links the authenticated user to that draft so they can immediately enter the draft flow.
 router.post("/", authMiddleware, async (req, res, next) => {
   const { type, numberOfTeams, budgetPerTeam, rosterSlots, teamNames, statCategories } = req.body || {};
 
@@ -138,6 +142,8 @@ router.post("/", authMiddleware, async (req, res, next) => {
   }
 });
 
+// Returns a draft and every team associated with it by draft ID.
+// Used to load the draft room state and team list for active draft sessions.
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;

@@ -1,0 +1,123 @@
+.welcome-page {
+  min-height: 100vh;
+  background: #8ed4f0;
+  color: #17324a;
+  padding: 20px 24px 48px;
+}
+
+.welcome-header {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcome-brand {
+  color: #f3f3f3;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.welcome-actions,
+.hero-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.welcome-main {
+  /* color: #f3f3f3; */
+  max-width: 1100px;
+  margin: 48px auto 0;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+}
+
+.hero p {
+  margin: 14px auto 0;
+  max-width: 700px;
+  color: rgba(23, 50, 74, 0.9);
+}
+
+.hero-actions {
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.feature-card {
+  background: #f6fbff;
+  border: 1px solid #cde2ef;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.feature-card h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.feature-card p {
+  margin: 0;
+  color: #3c5d77;
+  font-size: 0.95rem;
+}
+
+.api-card {
+  margin: 28px auto 0;
+  max-width: 700px;
+  background: #f6fbff;
+  border: 1px solid #cde2ef;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.api-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.api-card p {
+  margin: 10px 0 14px;
+  color: #3c5d77;
+}
+
+.welcome-btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.welcome-btn.primary {
+  background: #f4bf23;
+  color: #1a1a1a;
+}
+
+.welcome-btn.ghost {
+  background: #ffffff;
+  color: #1f3b56;
+  border: 1px solid #bfd8e8;
+}
+
+@media (max-width: 900px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
