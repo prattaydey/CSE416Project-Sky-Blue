@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { LoginForm } from "../components/LoginForm";
 import { useAuth } from "../hooks/useAuth";
 import "./LoginPage.css";
@@ -9,8 +9,7 @@ export const LoginPage = () => {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    navigate("/");
-    return null;
+    return <Navigate to="/app" replace />;
   }
 
   return (

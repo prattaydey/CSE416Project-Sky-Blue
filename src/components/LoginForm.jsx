@@ -20,7 +20,7 @@ export const LoginForm = () => {
     try {
       const data = await loginAPI(username, password);
       login(data.token, data.user);
-      navigate("/");
+      navigate("/app");
     } catch (err) {
       setError(err.message || "Login failed");
     } finally {

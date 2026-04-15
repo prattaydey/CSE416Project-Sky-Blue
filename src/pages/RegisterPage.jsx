@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { RegisterForm } from "../components/RegisterForm";
 import { useAuth } from "../hooks/useAuth";
 import "./RegisterPage.css";
@@ -10,8 +10,7 @@ export const RegisterPage = () => {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    navigate("/");
-    return null;
+    return <Navigate to="/app" replace />;
   }
 
   return (

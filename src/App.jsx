@@ -4,6 +4,7 @@ import PlayerPage from "./pages/PlayerPage";
 import HomePage from "./pages/HomePage";
 import DraftSetupPage from "./pages/DraftSetupPage";
 import TeamPage from "./pages/TeamPage";
+import WelcomePage from "./pages/WelcomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { AuthProvider } from "./context/AuthContext";
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
+        <Route path="/" element={<WelcomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
@@ -23,11 +25,11 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<HomePage />} />
+          <Route path="/app" element={<HomePage />} />
           <Route path="/draft-setup" element={<DraftSetupPage />} />
           <Route path="/team/:teamId" element={<TeamPage />} />
           <Route path="/player/:playerId" element={<PlayerPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/app" replace />} />
         </Route>
       </Routes>
     </AuthProvider>
