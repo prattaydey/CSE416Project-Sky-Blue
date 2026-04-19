@@ -267,12 +267,7 @@ export default function PlayerPage() {
 
       await postDraftPick(draftId, pickData);
       setSaveMessage(`Successfully drafted ${player.name} to team for $${draftPrice}!`);
-      setTimeout(() => {
-        setSelectedTeam("");
-        setDraftPrice("");
-        setSelectedPosition("");
-        setNominatorTeam("");
-      }, 1500);
+      navigate("/");
     } catch (err) {
       setSaveMessage(`Failed to draft player: ${err.message}`);
     }

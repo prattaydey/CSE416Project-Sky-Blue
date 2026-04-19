@@ -204,12 +204,23 @@ export default function TeamPage() {
               <p>No draft slot configuration available.</p>
             ) : (
               <ul>
-                {positionSlots.map((slot) => (
-                  <li key={slot.position}>
-                    <span>{slot.position}</span>
-                    <span>{slot.filled}/{slot.count}</span>
-                  </li>
-                ))}
+                {positionSlots.map((slot) => {
+                  const percentFilled = slot.count ? Math.round((slot.filled / slot.count) * 100) : 0;
+                  return (
+                    <li key={slot.position}>
+                      <div className="position-row">
+                        <span className="position-label">{slot.position}</span>
+                        <span className="position-count">{slot.filled}/{slot.count}</span>
+                      </div>
+                      <div className="position-bar-wrapper">
+                        <div className="position-bar">
+                          <div className="position-bar-fill" style={{ width: `${Math.min(percentFilled, 100)}%` }} />
+                        </div>
+                        <span className="position-bar-label">{percentFilled}%</span>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
