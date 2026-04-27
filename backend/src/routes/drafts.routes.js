@@ -286,5 +286,163 @@ router.delete("/:draftId/picks/last", authMiddleware, async (req, res, next) => 
     return next(error);
   }
 });
+// AI generated route to compare teams in a draft based on their rosters, budgets, and compiled stats.
+router.get("/:id/compare", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const draft = await Draft.findById(id);
+    if (!draft) {
+      return res.status(404).json({ error: "Draft not found" });
+    }
+
+    const teams = await Team.find({ draft: draft._id });
+
+    const statCategories = draft.statCategories || { hitters: [], pitchers: [] };
+    const allStatKeys = [
+      ...statCategories.hitters,
+      ...statCategories.pitchers,
+    ];
+
+    // Pitching positions used to classify players
+    const PITCHING_POSITIONS = new Set(["SP", "RP", "P", "CL"]);
+
+    function isPitcher(position) {
+      if (!position) return false;
+      const pos = String(position).toUpperCase().trim();
+      return PITCHING_POSITIONS.has(pos) || pos.includes("P");
+    }
+
+    // Build positional strength breakdown per team based on rosterSlots
+    function buildPositionalStrengths(roster, rosterSlots) {
+      return rosterSlots.map((slot) => {
+        const filled = roster.filter(
+          (item) => item.position === slot.position
+        ).length;
+        return {
+          position: slot.position,
+          required: slot.count,
+          filled,
+          complete: filled >= slot.count,
+        };
+      });
+    }
+
+    const teamStats = teams.map((team) => {
+      const roster = team.roster || [];
+      const hitters = roster.filter((item) => !isPitcher(item.position));
+      const pitchers = roster.filter((item) => isPitcher(item.position));
+
+      const totalSpent = roster.reduce(
+        (sum, item) => sum + (Number(item.amountPaid) || 0),
+        0
+      );
+      const budgetTotal = draft.budgetPerTeam;
+      const budgetRemaining = team.budgetRemaining;
+
+      // Total roster slots required
+      const totalSlotsRequired = (draft.rosterSlots || []).reduce(
+        (sum, slot) => sum + slot.count,
+        0
+      );
+      const rosterCompleteness =
+        totalSlotsRequired > 0
+          ? Math.round((roster.length / totalSlotsRequired) * 100)
+          : 0;
+
+      // Build compiled stats — we track totals and averages from the draft's
+      // chosen stat categories. Since we only have aggregated roster data
+      // we compute roster-level metrics
+      // that map to common stat category names.
+      const rosterStatMap = {
+        // Hitter counting stats (totals)
+        hr: hitters.reduce((s, p) => s + (Number(p.hr) || 0), 0),
+        rbi: hitters.reduce((s, p) => s + (Number(p.rbi) || 0), 0),
+        r: hitters.reduce((s, p) => s + (Number(p.r) || 0), 0),
+        sb: hitters.reduce((s, p) => s + (Number(p.sb) || 0), 0),
+        h: hitters.reduce((s, p) => s + (Number(p.h) || 0), 0),
+        // Hitter averages
+        avg: hitters.length
+          ? parseFloat(
+              (
+                hitters.reduce((s, p) => s + (Number(p.avg) || 0), 0) /
+                hitters.length
+              ).toFixed(3)
+            )
+          : null,
+        obp: hitters.length
+          ? parseFloat(
+              (
+                hitters.reduce((s, p) => s + (Number(p.obp) || 0), 0) /
+                hitters.length
+              ).toFixed(3)
+            )
+          : null,
+        // Pitcher counting stats
+        w: pitchers.reduce((s, p) => s + (Number(p.w) || 0), 0),
+        sv: pitchers.reduce((s, p) => s + (Number(p.sv) || 0), 0),
+        k: pitchers.reduce((s, p) => s + (Number(p.k) || 0), 0),
+        ks: pitchers.reduce((s, p) => s + (Number(p.k) || 0), 0),
+        // Pitcher averages
+        era: pitchers.length
+          ? parseFloat(
+              (
+                pitchers.reduce((s, p) => s + (Number(p.era) || 0), 0) /
+                pitchers.length
+              ).toFixed(2)
+            )
+          : null,
+        whip: pitchers.length
+          ? parseFloat(
+              (
+                pitchers.reduce((s, p) => s + (Number(p.whip) || 0), 0) /
+                pitchers.length
+              ).toFixed(2)
+            )
+          : null,
+      };
+
+      // Only surface stats the draft was configured to track
+      const compiledStats = {};
+      for (const key of allStatKeys) {
+        const normalized = key.toLowerCase().replace(/[^a-z]/g, "");
+        if (rosterStatMap[normalized] !== undefined) {
+          compiledStats[key] = rosterStatMap[normalized];
+        } else {
+          compiledStats[key] = null;
+        }
+      }
+
+      const positionalStrengths = buildPositionalStrengths(
+        roster,
+        draft.rosterSlots || []
+      );
+
+      return {
+        teamId: team._id,
+        teamName: team.name,
+        rosterCount: roster.length,
+        hitterCount: hitters.length,
+        pitcherCount: pitchers.length,
+        budgetTotal,
+        budgetSpent: totalSpent,
+        budgetRemaining,
+        rosterCompleteness,
+        positionalStrengths,
+        compiledStats,
+      };
+    });
+
+    return res.json({
+      draftId: draft._id,
+      statCategories,
+      rosterSlots: draft.rosterSlots,
+      budgetPerTeam: draft.budgetPerTeam,
+      teams: teamStats,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 module.exports = router;

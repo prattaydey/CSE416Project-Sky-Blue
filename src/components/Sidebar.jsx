@@ -118,6 +118,10 @@ export default function Sidebar() {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v10H3zM3 7h10M7 3v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           Draft History
         </NavLink>
+        <NavLink to="/compare" className="nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h5v12H2zM9 2h5v12H9z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Teams Comparison
+        </NavLink>
       </nav>
 
       <div className="sidebar-section">

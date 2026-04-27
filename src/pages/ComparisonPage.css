@@ -1,0 +1,266 @@
+/* AI generated CSS for ComparisonPage.jsx
+
+.comparison-page {
+  max-width: 100%;
+}
+
+/* ── Header ── */
+.comparison-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.comparison-header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.comparison-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ── Empty / loading / error states ── */
+.comparison-empty,
+.comparison-loading,
+.comparison-error {
+  background: var(--card-bg);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  padding: 40px 24px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.comparison-error {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* ── Section labels (Hitters / Pitchers) ── */
+.comparison-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 8px 14px 6px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Scroll wrapper ── */
+.comparison-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  margin-bottom: 32px;
+}
+
+/* ── Main comparison table ── */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.87rem;
+  min-width: 560px;
+}
+
+.comparison-table thead {
+  border-bottom: 2px solid var(--border);
+}
+
+.comparison-table th {
+  padding: 12px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-align: center;
+  border-left: 1px solid var(--border);
+}
+
+.comparison-table th:first-child {
+  text-align: left;
+  border-left: none;
+  min-width: 140px;
+}
+
+.comparison-table td {
+  padding: 11px 14px;
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  text-align: center;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.comparison-table td:first-child {
+  border-left: none;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  background: #f8fafc;
+}
+
+.comparison-table tbody tr:hover td {
+  background: #f0f7ff;
+}
+
+.comparison-table tbody tr:hover td:first-child {
+  background: #e8f0fe;
+}
+
+/* ── Team name header row ── */
+.col-team-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Budget cells ── */
+.cell-spent {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.cell-remaining {
+  color: #047857;
+  font-weight: 600;
+}
+
+/* ── Completeness bar ── */
+.completeness-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 90px;
+}
+
+.completeness-bar {
+  width: 72px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.completeness-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9333ea, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.completeness-pct {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── Stat value highlights ── */
+.stat-best {
+  background: #f0fdf4;
+  color: #047857;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.stat-worst {
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.stat-null {
+  color: #d1d5db;
+  font-size: 0.8rem;
+}
+
+/* ── Positional strengths section ── */
+.positions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 110px;
+}
+
+.pos-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.pos-chip-complete {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pos-chip-partial {
+  background: #fef9c3;
+  color: #713f12;
+}
+
+.pos-chip-empty {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* ── No draft banner ── */
+.no-draft-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  background: var(--card-bg);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.no-draft-banner p {
+  font-size: 0.93rem;
+  max-width: 340px;
+}
+
+.go-setup-btn {
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #9333ea, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.go-setup-btn:hover {
+  opacity: 0.88;
+}

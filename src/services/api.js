@@ -232,3 +232,13 @@ export async function swapPlayerPosition(teamId, playerId, newPosition) {
     },
   });
 }
+
+export async function fetchDraftCompare(draftId) {
+  return requestJson(CLIENT_BACKEND_URL, `/api/drafts/${encodeURIComponent(draftId)}/compare`, {
+    method: "GET",
+    userAuth: true,
+    statusMessages: {
+      404: "Draft not found.",
+    },
+  });
+}
