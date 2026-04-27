@@ -6,6 +6,7 @@ const rosterItemSchema = new mongoose.Schema(
     playerName: { type: String, default: null },
     position: { type: String, default: null },
     amountPaid: { type: Number, default: 0, min: 0 },
+    stats: { type: Map, of: Number, default: () => new Map() },
   },
   { _id: false }
 );

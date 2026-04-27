@@ -263,6 +263,23 @@ export default function PlayerPage() {
     }
 
     try {
+      const allConfiguredStats = [
+        ...(draft?.statCategories?.hitters || []),
+        ...(draft?.statCategories?.pitchers || []),
+      ];
+      const playerStats = {};
+      if (player.stats && typeof player.stats === "object") {
+        const lowerPlayerStats = Object.fromEntries(
+          Object.entries(player.stats).map(([k, v]) => [k.toLowerCase(), v])
+        );
+        for (const key of allConfiguredStats) {
+          const val = lowerPlayerStats[key.toLowerCase()];
+          if (val !== undefined && val !== null && typeof val === "number") {
+            playerStats[key] = val;
+          }
+        }
+      }
+
       const pickData = {
         playerId,
         playerName: player.name,
@@ -270,6 +287,7 @@ export default function PlayerPage() {
         price,
         teamId: selectedTeam,
         nominatorTeamId: nominatorTeam,
+        stats: playerStats,
       };
 
       await postDraftPick(draftId, pickData);
