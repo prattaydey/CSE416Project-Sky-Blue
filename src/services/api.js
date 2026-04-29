@@ -77,6 +77,18 @@ export async function fetchPlayer(playerId) {
   });
 }
 
+export async function createCustomPlayer(payload) {
+  return requestJson(API_BASE_URL, "/api/players", {
+    method: "POST",
+    body: payload,
+    statusMessages: {
+      400: "Invalid player data.",
+      401: "Unauthorized — check your API key.",
+      409: "Player ID already exists.",
+    },
+  });
+}
+
 export async function registerUser(username, password) {
   return requestJson(CLIENT_BACKEND_URL, "/api/users/register", {
     method: "POST",
