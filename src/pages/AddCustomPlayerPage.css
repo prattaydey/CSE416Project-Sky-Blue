@@ -1,0 +1,102 @@
+.add-custom-player-page {
+  max-width: 100%;
+}
+
+.custom-back-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.custom-player-card,
+.custom-notes-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.custom-player-card h2 {
+  font-size: 1.18rem;
+  margin-bottom: 14px;
+}
+
+.custom-notes-card h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.custom-form-grid,
+.custom-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.custom-stats-grid {
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  margin-top: 10px;
+}
+
+.custom-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.custom-field label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.custom-field input,
+.custom-field select,
+.custom-notes-card textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: #f9fbfd;
+  outline: none;
+}
+
+.custom-field input:focus,
+.custom-field select:focus,
+.custom-notes-card textarea:focus {
+  border-color: var(--primary-light);
+  background: var(--card-bg);
+}
+
+.save-custom-btn {
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 600;
+  background: #02051f;
+  color: #fff;
+  cursor: pointer;
+}
+
+.save-custom-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .custom-form-grid,
+  .custom-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

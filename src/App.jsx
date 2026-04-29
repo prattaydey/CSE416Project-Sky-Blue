@@ -6,6 +6,7 @@ import DraftSetupPage from "./pages/DraftSetupPage";
 import DraftHistoryPage from "./pages/DraftHistoryPage";
 import TeamPage from "./pages/TeamPage";
 import ComparisonPage from "./pages/ComparisonPage";
+import AddCustomPlayerPage from "./pages/AddCustomPlayerPage";
 import WelcomePage from "./pages/WelcomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/draft-setup" element={<DraftSetupPage />} />
           <Route path="/draft-history" element={<DraftHistoryPage />} />
           <Route path="/compare" element={<ComparisonPage />} />
+          <Route path="/custom-player/new" element={<AddCustomPlayerPage />} />
           <Route path="/team/:teamId" element={<TeamPage />} />
           <Route path="/player/:playerId" element={<PlayerPage />} />
           <Route path="*" element={<Navigate to="/app" replace />} />
