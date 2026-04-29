@@ -66,7 +66,7 @@ export default function PlayerPage() {
   const [draft, setDraft] = useState(null);
   const [draftLoading, setDraftLoading] = useState(true);
   const { user } = useAuth();
-  const { addPick, pickHistory } = useContext(DraftContext);
+  const { addPick, pickHistory, draftedPlayerIds } = useContext(DraftContext);
   const toast = useToast();
 
   useEffect(() => {
