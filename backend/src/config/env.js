@@ -12,4 +12,6 @@ module.exports = {
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
   jwtSecret: process.env.JWT_SECRET || "secret-key",
   jwtExpiry: process.env.JWT_EXPIRY || "24h",
+  draftKitApiUrl: process.env.DRAFTKIT_API_URL || "http://localhost:3000",
+  draftKitAppClientKey: process.env.DRAFTKIT_APP_CLIENT_KEY || "",
 };

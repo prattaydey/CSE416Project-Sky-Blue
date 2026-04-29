@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchPlayers, undoLastPick } from "../services/api";
+import { fetchPlayers, fetchPlayerValuation, undoLastPick } from "../services/api";
 import { DraftContext } from "../context/DraftContext";
 import { useToast } from "../context/ToastContext";
 import "./HomePage.css";
@@ -13,6 +13,7 @@ export default function HomePage() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [valuations, setValuations] = useState({});
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [leagueFilter, setLeagueFilter] = useState("");
@@ -50,6 +51,46 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadValuations() {
+      if (!draftId || players.length === 0) {
+        setValuations({});
+        return;
+      }
+
+      const ids = players
+        .map((p) => p?.id)
+        .filter((id) => id !== undefined && id !== null)
+        .map((id) => String(id))
+        .filter((id) => !draftedPlayerIds.has(id));
+
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const data = await fetchPlayerValuation(id);
+          return { id, value: data?.value };
+        })
+      );
+
+      if (cancelled) return;
+
+      const next = {};
+      for (const r of results) {
+        if (r.status === "fulfilled" && r.value && r.value.id) {
+          next[r.value.id] = r.value.value;
+        }
+      }
+      setValuations(next);
+    }
+
+    loadValuations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [draftId, pickHistory.length, players, draftedPlayerIds]);
 
   const lastPick = pickHistory.length > 0 ? pickHistory[pickHistory.length - 1] : null;
 
@@ -197,6 +238,7 @@ export default function HomePage() {
         <thead>
           <tr>
             <th className="col-name">Name</th>
+            <th>Value</th>
             <th>Position</th>
             <th>Team</th>
             <th>League</th>
@@ -211,6 +253,7 @@ export default function HomePage() {
           {filtered.map((p) => (
             <tr key={p.id}>
               <td className="col-name">{p.name}</td>
+              <td>{Number.isFinite(valuations[String(p.id)]) ? `$${valuations[String(p.id)]}` : "-"}</td>
               <td>
                 <div className="badge-row">
                   {(Array.isArray(p.position) ? p.position : p.position ? [p.position] : []).map((pos) => (
@@ -240,7 +283,7 @@ export default function HomePage() {
           ))}
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={9} className="empty-row">No players match your filters.</td>
+              <td colSpan={10} className="empty-row">No players match your filters.</td>
             </tr>
           )}
         </tbody>

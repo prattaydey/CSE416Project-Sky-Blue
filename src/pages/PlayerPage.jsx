@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { fetchPlayer, fetchUserPlayerNote, saveUserPlayerNote, fetchDraftById, postDraftPick } from "../services/api";
+import { fetchPlayer, fetchPlayerValuation, fetchUserPlayerNote, saveUserPlayerNote, fetchDraftById, postDraftPick } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 import { DraftContext } from "../context/DraftContext";
 import { useToast } from "../context/ToastContext";
@@ -54,6 +54,7 @@ export default function PlayerPage() {
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [valuation, setValuation] = useState(null);
   const [notes, setNotes] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
   const [draftPrice, setDraftPrice] = useState("");
@@ -65,7 +66,7 @@ export default function PlayerPage() {
   const [draft, setDraft] = useState(null);
   const [draftLoading, setDraftLoading] = useState(true);
   const { user } = useAuth();
-  const { addPick, draftedPlayerIds } = useContext(DraftContext);
+  const { addPick, pickHistory } = useContext(DraftContext);
   const toast = useToast();
 
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function PlayerPage() {
     setLoading(true);
     setError(null);
     setPlayer(null);
+    setValuation(null);
 
     fetchPlayer(playerId)
       .then((data) => {
@@ -91,6 +93,28 @@ export default function PlayerPage() {
       cancelled = true;
     };
   }, [playerId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadValuation() {
+      try {
+        const data = await fetchPlayerValuation(playerId);
+        if (!cancelled) {
+          setValuation(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setValuation(null);
+        }
+      }
+    }
+
+    loadValuation();
+    return () => {
+      cancelled = true;
+    };
+  }, [playerId, pickHistory.length]);
 
   // Fetch active draft and teams
   useEffect(() => {
@@ -191,6 +215,7 @@ export default function PlayerPage() {
   if (!player) return null;
 
   const statEntries = player.stats ? Object.entries(player.stats) : [];
+  const displayValue = Number.isFinite(valuation?.value) ? `$${valuation.value}` : null;
 
   async function saveNotes() {
     if (!user) {
@@ -322,6 +347,7 @@ export default function PlayerPage() {
               {player.team && <Badge label={player.team} variant="team" />}
               {player.league && <Badge label={player.league} variant={player.league === "AL" ? "league-al" : "league-nl"} />}
             </div>
+            {displayValue && <div className="player-valuation">Value: <strong>{displayValue}</strong></div>}
 
             <div className="stats-grid">
               {statEntries.map(([key, value]) => (
