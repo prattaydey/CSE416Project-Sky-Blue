@@ -108,32 +108,6 @@
   white-space: nowrap;
 }
 
-.players-table th.sortable {
-  cursor: pointer;
-}
-
-.players-table th.sortable .sort-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.players-table th.sortable .sort-button:hover {
-  color: var(--primary-light);
-}
-
-.sort-indicator {
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
 .players-table td {
   padding: 11px 14px;
   border-top: 1px solid var(--border);

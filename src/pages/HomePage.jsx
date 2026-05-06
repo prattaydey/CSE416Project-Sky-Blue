@@ -17,8 +17,6 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [leagueFilter, setLeagueFilter] = useState("");
-  const [sortKey, setSortKey] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
   const navigate = useNavigate();
   const { draftedPlayerIds, pickHistory, draftId, teams, removeLastPick } = useContext(DraftContext);
   const toast = useToast();
@@ -115,48 +113,6 @@ export default function HomePage() {
     }
   }
 
-  const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortOrder("asc");
-    }
-  };
-
-  const getSortValue = (player, key) => {
-    switch (key) {
-      case "name":
-        return player.name?.toLowerCase() ?? "";
-      case "value": {
-        const value = valuations[String(player.id)];
-        return typeof value === "number" ? value : null;
-      }
-      case "position": {
-        const positions = Array.isArray(player.position)
-          ? player.position
-          : player.position
-          ? [player.position]
-          : [];
-        return positions.join(", ").toLowerCase();
-      }
-      case "team":
-        return player.team?.toLowerCase() ?? "";
-      case "league":
-        return player.league?.toLowerCase() ?? "";
-      case "avg":
-        return typeof player.avg === "number" ? player.avg : null;
-      case "hr":
-        return typeof player.hr === "number" ? player.hr : null;
-      case "rbi":
-        return typeof player.rbi === "number" ? player.rbi : null;
-      case "sb":
-        return typeof player.sb === "number" ? player.sb : null;
-      default:
-        return "";
-    }
-  };
-
   const allPositions = useMemo(() => {
     const posSet = new Set();
     players.forEach((p) => {
@@ -183,30 +139,6 @@ export default function HomePage() {
       return true;
     });
   }, [players, search, posFilter, leagueFilter, draftedPlayerIds]);
-
-  const sortedPlayers = useMemo(() => {
-    const list = [...filtered];
-    list.sort((a, b) => {
-      const aValue = getSortValue(a, sortKey);
-      const bValue = getSortValue(b, sortKey);
-
-      const aMissing = aValue === null || aValue === undefined || aValue === "";
-      const bMissing = bValue === null || bValue === undefined || bValue === "";
-
-      if (aMissing && bMissing) return 0;
-      if (aMissing) return sortOrder === "asc" ? 1 : -1;
-      if (bMissing) return sortOrder === "asc" ? -1 : 1;
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortOrder === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-    });
-    return list;
-  }, [filtered, sortKey, sortOrder, valuations]);
 
   if (loading) {
     return (
@@ -305,74 +237,20 @@ export default function HomePage() {
       <table className="players-table">
         <thead>
           <tr>
-            <th className="col-name sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("name")}
-                aria-label={`Sort by name ${sortKey === "name" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                Name
-                <span className="sort-indicator">{sortKey === "name" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("value")}
-                aria-label={`Sort by value ${sortKey === "value" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                Value
-                <span className="sort-indicator">{sortKey === "value" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("position")}
-                aria-label={`Sort by position ${sortKey === "position" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                Position
-                <span className="sort-indicator">{sortKey === "position" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("team")}
-                aria-label={`Sort by team ${sortKey === "team" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                Team
-                <span className="sort-indicator">{sortKey === "team" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("league")}
-                aria-label={`Sort by league ${sortKey === "league" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                League
-                <span className="sort-indicator">{sortKey === "league" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("avg")}
-                aria-label={`Sort by average or ERA ${sortKey === "avg" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                AVG/ERA
-                <span className="sort-indicator">{sortKey === "avg" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("hr")}
-                aria-label={`Sort by home runs or wins ${sortKey === "hr" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                HR/W
-                <span className="sort-indicator">{sortKey === "hr" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("rbi")}
-                aria-label={`Sort by RBI or saves ${sortKey === "rbi" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                RBI/SV
-                <span className="sort-indicator">{sortKey === "rbi" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
-            <th className="sortable">
-              <button type="button" className="sort-button" onClick={() => handleSort("sb")}
-                aria-label={`Sort by stolen bases or strikeouts ${sortKey === "sb" ? (sortOrder === "asc" ? "descending" : "ascending") : "ascending"}`}>
-                SB/K
-                <span className="sort-indicator">{sortKey === "sb" ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}</span>
-              </button>
-            </th>
+            <th className="col-name">Name</th>
+            <th>Value</th>
+            <th>Position</th>
+            <th>Team</th>
+            <th>League</th>
+            <th>AVG/ERA</th>
+            <th>HR/W</th>
+            <th>RBI/SV</th>
+            <th>SB/K</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {sortedPlayers.map((p) => (
+          {filtered.map((p) => (
             <tr key={p.id}>
               <td className="col-name">{p.name}</td>
               <td>{Number.isFinite(valuations[String(p.id)]) ? `$${valuations[String(p.id)]}` : "-"}</td>
