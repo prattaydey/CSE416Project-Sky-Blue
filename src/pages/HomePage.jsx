@@ -9,6 +9,12 @@ import "./PlayerPage.css";
 function Badge({ label, variant }) {
   return <span className={`badge badge-${variant}`}>{label}</span>;
 }
+
+function SortIcon({ active, dir }) {
+  if (!active) return <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>;
+  return <span style={{ marginLeft: 4 }}>{dir === "asc" ? "↑" : "↓"}</span>;
+}
+
 export default function HomePage() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +23,8 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState("");
   const [leagueFilter, setLeagueFilter] = useState("");
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
   const navigate = useNavigate();
   const { draftedPlayerIds, pickHistory, draftId, teams, removeLastPick } = useContext(DraftContext);
   const toast = useToast();
@@ -113,6 +121,15 @@ export default function HomePage() {
     }
   }
 
+  function handleSort(key) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
   const allPositions = useMemo(() => {
     const posSet = new Set();
     players.forEach((p) => {
@@ -140,6 +157,27 @@ export default function HomePage() {
     });
   }, [players, search, posFilter, leagueFilter, draftedPlayerIds]);
 
+  const sorted = useMemo(() => {
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
+      let aVal = sortKey === "value" ? (valuations[String(a.id)] ?? null) : a[sortKey];
+      let bVal = sortKey === "value" ? (valuations[String(b.id)] ?? null) : b[sortKey];
+
+      // Push nulls/undefined to the bottom regardless of direction
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+
+      if (typeof aVal === "string") {
+        return sortDir === "asc"
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+
+      return sortDir === "asc" ? aVal - bVal : bVal - aVal;
+    });
+  }, [filtered, sortKey, sortDir, valuations]);
+
   if (loading) {
     return (
       <div className="home">
@@ -161,6 +199,8 @@ export default function HomePage() {
       </div>
     );
   }
+
+  const thStyle = { cursor: "pointer", userSelect: "none" };
 
   return (
     <div className="home">
@@ -237,20 +277,36 @@ export default function HomePage() {
       <table className="players-table">
         <thead>
           <tr>
-            <th className="col-name">Name</th>
-            <th>Value</th>
+            <th className="col-name" style={thStyle} onClick={() => handleSort("name")}>
+              Name <SortIcon active={sortKey === "name"} dir={sortDir} />
+            </th>
+            <th style={thStyle} onClick={() => handleSort("value")}>
+              Value <SortIcon active={sortKey === "value"} dir={sortDir} />
+            </th>
             <th>Position</th>
-            <th>Team</th>
-            <th>League</th>
-            <th>AVG/ERA</th>
-            <th>HR/W</th>
-            <th>RBI/SV</th>
-            <th>SB/K</th>
+            <th style={thStyle} onClick={() => handleSort("team")}>
+              Team <SortIcon active={sortKey === "team"} dir={sortDir} />
+            </th>
+            <th style={thStyle} onClick={() => handleSort("league")}>
+              League <SortIcon active={sortKey === "league"} dir={sortDir} />
+            </th>
+            <th style={thStyle} onClick={() => handleSort("avg")}>
+              AVG/ERA <SortIcon active={sortKey === "avg"} dir={sortDir} />
+            </th>
+            <th style={thStyle} onClick={() => handleSort("hr")}>
+              HR/W <SortIcon active={sortKey === "hr"} dir={sortDir} />
+            </th>
+            <th style={thStyle} onClick={() => handleSort("rbi")}>
+              RBI/SV <SortIcon active={sortKey === "rbi"} dir={sortDir} />
+            </th>
+            <th style={thStyle} onClick={() => handleSort("sb")}>
+              SB/K <SortIcon active={sortKey === "sb"} dir={sortDir} />
+            </th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {filtered.map((p) => (
+          {sorted.map((p) => (
             <tr key={p.id}>
               <td className="col-name">{p.name}</td>
               <td>{Number.isFinite(valuations[String(p.id)]) ? `$${valuations[String(p.id)]}` : "-"}</td>
@@ -281,7 +337,7 @@ export default function HomePage() {
               </td>
             </tr>
           ))}
-          {filtered.length === 0 && (
+          {sorted.length === 0 && (
             <tr>
               <td colSpan={10} className="empty-row">No players match your filters.</td>
             </tr>
