@@ -103,7 +103,7 @@ router.put("/:teamId/swap", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ error: "Player is already assigned to that position" });
     }
 
-    // Check that the new position has an open slot on this team
+    // Check that the new position has an open slot on this team 
     if (team.draft) {
       const slot = team.draft.rosterSlots.find((s) => s.position === newPosition.trim());
       if (!slot) {
