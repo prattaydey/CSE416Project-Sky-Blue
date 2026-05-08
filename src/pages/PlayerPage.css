@@ -289,3 +289,43 @@
 .retry-btn:hover {
   opacity: 0.88;
 }
+
+/* Taxi Squad Styles */
+.taxi-info-box {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: #78350f;
+}
+
+.taxi-info-box p {
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.taxi-info-box p:first-child {
+  margin-top: 0;
+}
+
+.taxi-info-box p:last-child {
+  margin-bottom: 0;
+}
+
+.taxi-price-display {
+  margin-bottom: 10px;
+}
+
+.price-fixed {
+  width: 100%;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  padding: 12px 10px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+  background: rgba(74, 144, 226, 0.05);
+}

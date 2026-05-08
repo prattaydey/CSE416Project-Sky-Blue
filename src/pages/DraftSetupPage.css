@@ -183,3 +183,40 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Taxi Roster Styles */
+.taxi-roster-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f3f4f6;
+}
+
+.taxi-roster-item {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.taxi-roster-item span {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.taxi-roster-item input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+}
+
+.taxi-info {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #7c3aed;
+  font-style: italic;
+}
