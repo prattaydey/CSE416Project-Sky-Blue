@@ -122,6 +122,10 @@ export default function Sidebar() {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h5v12H2zM9 2h5v12H9z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Teams Comparison
         </NavLink>
+        <NavLink to="/taxi-rosters" className="nav-item">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3h12M2 7h12M2 11h8M6 9v4M10 9v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          Taxi Rosters
+        </NavLink>
         <NavLink to="/custom-player/new" className="nav-item">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           Add Custom Player
