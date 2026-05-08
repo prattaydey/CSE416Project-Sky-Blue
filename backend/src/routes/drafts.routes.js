@@ -187,8 +187,19 @@ router.post("/:draftId/picks", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ error: "teamId is required and must be a valid ObjectId string" });
     }
 
-    if (!nominatorTeamId || typeof nominatorTeamId !== "string") {
-      return res.status(400).json({ error: "nominatorTeamId is required and must be a valid ObjectId string" });
+    const isTaxi = position.trim().toUpperCase() === "TAXI";
+
+    // Taxi-specific validation
+    if (isTaxi) {
+      if (price !== 1) {
+        return res.status(400).json({ error: "Taxi squad players must be priced at $1" });
+      }
+      // nominatorTeamId is optional for Taxi
+    } else {
+      // Non-Taxi requires nominatorTeamId
+      if (!nominatorTeamId || typeof nominatorTeamId !== "string") {
+        return res.status(400).json({ error: "nominatorTeamId is required and must be a valid ObjectId string" });
+      }
     }
 
     // Verify draft exists
@@ -203,10 +214,12 @@ router.post("/:draftId/picks", authMiddleware, async (req, res, next) => {
       return res.status(404).json({ error: "Team not found or does not belong to this draft" });
     }
 
-    // Verify nominator team exists and belongs to this draft
-    const nominatorTeam = await Team.findById(nominatorTeamId);
-    if (!nominatorTeam || nominatorTeam.draft.toString() !== draftId) {
-      return res.status(404).json({ error: "Nominator team not found or does not belong to this draft" });
+    // Verify nominator team exists and belongs to this draft (if provided)
+    if (nominatorTeamId) {
+      const nominatorTeam = await Team.findById(nominatorTeamId);
+      if (!nominatorTeam || nominatorTeam.draft.toString() !== draftId) {
+        return res.status(404).json({ error: "Nominator team not found or does not belong to this draft" });
+      }
     }
 
     // Check if team has enough budget
@@ -214,6 +227,39 @@ router.post("/:draftId/picks", authMiddleware, async (req, res, next) => {
       return res.status(400).json({ error: "Team does not have enough budget for this pick" });
     }
 
+    // Validate roster position exists
+    const positionSlot = draft.rosterSlots.find((slot) => slot.position === position);
+    if (!positionSlot) {
+      return res.status(400).json({ error: `Position "${position}" is not available in this draft's roster slots` });
+    }
+
+    // For Taxi, check if main roster is full
+    if (isTaxi) {
+      const mainRosterPositions = draft.rosterSlots.filter((slot) => slot.position.toUpperCase() !== "TAXI");
+      const mainRosterSize = mainRosterPositions.reduce((sum, slot) => sum + slot.count, 0);
+      const playersInMainRoster = team.roster.filter((p) => p.position.toUpperCase() !== "TAXI").length;
+
+      if (playersInMainRoster < mainRosterSize) {
+        return res.status(400).json({ 
+          error: `Cannot add to Taxi Squad yet — main roster is not full (${playersInMainRoster}/${mainRosterSize} filled)` 
+        });
+      }
+
+      const playersInTaxi = team.roster.filter((p) => p.position.toUpperCase() === "TAXI").length;
+      if (playersInTaxi >= positionSlot.count) {
+        return res.status(400).json({ 
+          error: `No open Taxi slots — team has ${playersInTaxi}/${positionSlot.count} filled` 
+        });
+      }
+    } else {
+      // Regular position check
+      const playersInPosition = team.roster.filter((p) => p.position === position).length;
+      if (playersInPosition >= positionSlot.count) {
+        return res.status(400).json({ 
+          error: `No open ${position} slots — team has ${playersInPosition}/${positionSlot.count} filled` 
+        });
+      }
+    }
 
     const allConfiguredStats = [
       ...(draft.statCategories?.hitters || []),
@@ -250,7 +296,7 @@ router.post("/:draftId/picks", authMiddleware, async (req, res, next) => {
       position,
       price,
       teamId,
-      nominatorTeamId,
+      nominatorTeamId: nominatorTeamId || null,
       timestamp: new Date(),
     });
 

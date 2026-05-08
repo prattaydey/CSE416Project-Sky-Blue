@@ -237,8 +237,20 @@ export default function PlayerPage() {
   }
 
   async function handleDraftPlayer() {
-    if (!selectedTeam || !draftPrice || !selectedPosition || !nominatorTeam) {
-      toast.warning("Please fill in all draft fields: team, price, position, and nominator.");
+    const isTaxi = selectedPosition === "Taxi";
+
+    if (!selectedTeam || !selectedPosition) {
+      toast.warning("Please select team and position.");
+      return;
+    }
+
+    if (!isTaxi && !draftPrice) {
+      toast.warning("Please fill in price.");
+      return;
+    }
+
+    if (!isTaxi && !nominatorTeam) {
+      toast.warning("Please select nominator team.");
       return;
     }
 
@@ -254,7 +266,7 @@ export default function PlayerPage() {
     }
 
     const team = draftTeams.find((t) => t._id === selectedTeam);
-    const price = parseFloat(draftPrice);
+    const price = isTaxi ? 1 : parseFloat(draftPrice);
 
     if (!team) {
       toast.error("Selected team not found.");
@@ -279,12 +291,34 @@ export default function PlayerPage() {
       return;
     }
 
-    const playersInPosition = team.roster.filter((p) => p.position === selectedPosition).length;
-    if (playersInPosition >= positionSlot.count) {
-      toast.error(
-        `No open ${selectedPosition} slots — ${team.name} has ${playersInPosition}/${positionSlot.count} filled.`
-      );
-      return;
+    // For Taxi, check if main roster is full
+    if (isTaxi) {
+      const mainRosterPositions = draft.rosterSlots.filter((slot) => slot.position !== "Taxi");
+      const mainRosterSize = mainRosterPositions.reduce((sum, slot) => sum + slot.count, 0);
+      const playersInMainRoster = team.roster.filter((p) => p.position !== "Taxi").length;
+
+      if (playersInMainRoster < mainRosterSize) {
+        toast.error(
+          `Cannot add to Taxi Squad yet — ${team.name} main roster is not full (${playersInMainRoster}/${mainRosterSize} filled).`
+        );
+        return;
+      }
+
+      const playersInTaxi = team.roster.filter((p) => p.position === "Taxi").length;
+      if (playersInTaxi >= positionSlot.count) {
+        toast.error(
+          `No open Taxi slots — ${team.name} has ${playersInTaxi}/${positionSlot.count} filled.`
+        );
+        return;
+      }
+    } else {
+      const playersInPosition = team.roster.filter((p) => p.position === selectedPosition).length;
+      if (playersInPosition >= positionSlot.count) {
+        toast.error(
+          `No open ${selectedPosition} slots — ${team.name} has ${playersInPosition}/${positionSlot.count} filled.`
+        );
+        return;
+      }
     }
 
     try {
@@ -311,16 +345,16 @@ export default function PlayerPage() {
         position: selectedPosition,
         price,
         teamId: selectedTeam,
-        nominatorTeamId: nominatorTeam,
+        nominatorTeamId: isTaxi ? null : nominatorTeam,
         stats: playerStats,
       };
 
       await postDraftPick(draftId, pickData);
-      const nominator = draftTeams.find((t) => t._id === nominatorTeam);
+      const nominator = isTaxi ? null : draftTeams.find((t) => t._id === nominatorTeam);
       addPick({
         ...pickData,
         teamName: team.name,
-        nominatorTeamName: nominator?.name,
+        nominatorTeamName: nominator?.name || null,
         timestamp: new Date().toISOString(),
       });
       toast.success(`${player.name} drafted for $${price}!`);
@@ -402,7 +436,15 @@ export default function PlayerPage() {
             id="position-select"
             className="form-input"
             value={selectedPosition}
-            onChange={(e) => setSelectedPosition(e.target.value)}
+            onChange={(e) => {
+              setSelectedPosition(e.target.value);
+              // Auto-set price to $1 for Taxi
+              if (e.target.value === "Taxi") {
+                setDraftPrice("1");
+              } else {
+                setDraftPrice("");
+              }
+            }}
             disabled={!player || !player.position || player.position.length === 0}
           >
             <option value="">Choose position...</option>
@@ -411,38 +453,61 @@ export default function PlayerPage() {
                 {pos}
               </option>
             ))}
+            <option value="Taxi">Taxi (Any Position)</option>
           </select>
 
-          <label className="form-label" htmlFor="nominator-select">
-            Nominator Team
-          </label>
-          <select
-            id="nominator-select"
-            className="form-input"
-            value={nominatorTeam}
-            onChange={(e) => setNominatorTeam(e.target.value)}
-            disabled={draftTeams.length === 0}
-          >
-            <option value="">Choose nominator...</option>
-            {draftTeams.map((team) => (
-              <option key={team._id} value={team._id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
+          {selectedPosition !== "Taxi" && (
+            <>
+              <label className="form-label" htmlFor="nominator-select">
+                Nominator Team
+              </label>
+              <select
+                id="nominator-select"
+                className="form-input"
+                value={nominatorTeam}
+                onChange={(e) => setNominatorTeam(e.target.value)}
+                disabled={draftTeams.length === 0}
+              >
+                <option value="">Choose nominator...</option>
+                {draftTeams.map((team) => (
+                  <option key={team._id} value={team._id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
 
-          <label className="form-label" htmlFor="draft-price">
-            Draft Price
-          </label>
-          <input
-            id="draft-price"
-            className="form-input"
-            type="number"
-            min="1"
-            placeholder="$"
-            value={draftPrice}
-            onChange={(e) => setDraftPrice(e.target.value)}
-          />
+          {selectedPosition === "Taxi" && (
+            <div className="taxi-info-box">
+              <p>💡 Taxi squad players are $1 each and can be any position</p>
+              <p>💡 No nominator needed for Taxi squad picks</p>
+            </div>
+          )}
+
+          {selectedPosition !== "Taxi" && (
+            <>
+              <label className="form-label" htmlFor="draft-price">
+                Draft Price
+              </label>
+              <input
+                id="draft-price"
+                className="form-input"
+                type="number"
+                min="1"
+                placeholder="$"
+                value={draftPrice}
+                onChange={(e) => setDraftPrice(e.target.value)}
+              />
+            </>
+          )}
+
+          {selectedPosition === "Taxi" && (
+            <div className="taxi-price-display">
+              <label className="form-label">Draft Price</label>
+              <div className="price-fixed">$1</div>
+            </div>
+          )}
 
           <button className="draft-btn" onClick={handleDraftPlayer} disabled={draftLoading || draftTeams.length === 0}>
             Draft Player

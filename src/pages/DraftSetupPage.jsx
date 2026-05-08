@@ -14,6 +14,8 @@ const defaultRosterCounts = DEFAULT_POSITIONS.reduce((acc, pos) => {
   return acc;
 }, {});
 
+const defaultTaxiCount = 0;
+
 const defaultHitterStats = [...HITTER_STATS];
 const defaultPitcherStats = [...PITCHER_STATS];
 
@@ -24,6 +26,7 @@ export default function DraftSetupPage() {
   const [numberOfTeams, setNumberOfTeams] = useState(6);
   const [budgetPerTeam, setBudgetPerTeam] = useState(260);
   const [rosterCounts, setRosterCounts] = useState(defaultRosterCounts);
+  const [taxiCount, setTaxiCount] = useState(defaultTaxiCount);
   const [teamNames, setTeamNames] = useState(Array.from({ length: 6 }, () => ""));
   const [selectedHitterStats, setSelectedHitterStats] = useState(defaultHitterStats);
   const [selectedPitcherStats, setSelectedPitcherStats] = useState(defaultPitcherStats);
@@ -34,6 +37,11 @@ export default function DraftSetupPage() {
   const rosterSize = useMemo(
     () => DEFAULT_POSITIONS.reduce((sum, pos) => sum + Number(rosterCounts[pos] || 0), 0),
     [rosterCounts]
+  );
+
+  const totalRosterWithTaxi = useMemo(
+    () => rosterSize + Number(taxiCount || 0),
+    [rosterSize, taxiCount]
   );
 
   const handleTeamCountChange = (value) => {
@@ -87,6 +95,7 @@ export default function DraftSetupPage() {
     setNumberOfTeams(6);
     setBudgetPerTeam(260);
     setRosterCounts(defaultRosterCounts);
+    setTaxiCount(defaultTaxiCount);
     setTeamNames(Array.from({ length: 6 }, () => ""));
     setSelectedHitterStats(defaultHitterStats);
     setSelectedPitcherStats(defaultPitcherStats);
@@ -108,6 +117,14 @@ export default function DraftSetupPage() {
       position,
       count: Number(rosterCounts[position] || 0),
     }));
+
+    // Add Taxi to roster slots if count > 0
+    if (Number(taxiCount || 0) > 0) {
+      rosterSlots.push({
+        position: "Taxi",
+        count: Number(taxiCount),
+      });
+    }
 
     const invalidSlot = rosterSlots.some((slot) => !Number.isInteger(slot.count) || slot.count < 0);
     if (invalidSlot) {
@@ -219,6 +236,24 @@ export default function DraftSetupPage() {
                 </label>
               ))}
             </div>
+            <div className="taxi-roster-section">
+              <label className="taxi-roster-item">
+                <span>Taxi (Any Position)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={taxiCount}
+                  onChange={(e) => {
+                    const count = Number(e.target.value);
+                    if (!Number.isInteger(count) || count < 0) {
+                      return;
+                    }
+                    setTaxiCount(count);
+                  }}
+                />
+              </label>
+              <p className="taxi-info">Taxi squad players can be added after the main roster is full</p>
+            </div>
           </div>
 
           <div className="draft-stat-categories-section">
@@ -292,9 +327,21 @@ export default function DraftSetupPage() {
             <strong>${budgetPerTeam}</strong>
           </div>
           <div className="summary-row">
-            <span>Roster Size</span>
+            <span>Main Roster Size</span>
             <strong>{rosterSize} players</strong>
           </div>
+          {taxiCount > 0 && (
+            <div className="summary-row">
+              <span>Taxi Squad Size</span>
+              <strong>{taxiCount} players</strong>
+            </div>
+          )}
+          {taxiCount > 0 && (
+            <div className="summary-row">
+              <span>Total Roster Size</span>
+              <strong>{totalRosterWithTaxi} players</strong>
+            </div>
+          )}
 
           {message && <div className="success-message">{message}</div>}
           {error && <div className="error-message">{error}</div>}

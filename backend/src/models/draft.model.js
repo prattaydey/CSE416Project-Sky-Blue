@@ -23,7 +23,7 @@ const pickHistorySchema = new mongoose.Schema(
     position: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
-    nominatorTeamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
+    nominatorTeamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team", default: null },
     timestamp: { type: Date, default: Date.now },
   },
   { _id: false }
