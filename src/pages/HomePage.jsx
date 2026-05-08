@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchPlayers, fetchPlayerValuation, undoLastPick } from "../services/api";
 import { DraftContext } from "../context/DraftContext";
@@ -13,6 +13,41 @@ function Badge({ label, variant }) {
 function SortIcon({ active, dir }) {
   if (!active) return <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>;
   return <span style={{ marginLeft: 4 }}>{dir === "asc" ? "↑" : "↓"}</span>;
+}
+
+function buildStatusSnapshot(players) {
+  const snapshot = new Map();
+  for (const player of players) {
+    snapshot.set(String(player.id), {
+      name: player.name || "Unknown player",
+      status: player.status || "active",
+      injuryStatus: player.injuryStatus || "",
+    });
+  }
+  return snapshot;
+}
+
+function detectStatusChanges(previousSnapshot, nextPlayers) {
+  const changes = [];
+
+  for (const player of nextPlayers) {
+    const id = String(player.id);
+    const previous = previousSnapshot.get(id);
+    if (!previous) continue;
+
+    const nextStatus = player.status || "active";
+    const nextInjuryStatus = player.injuryStatus || "";
+    if (previous.status === nextStatus && previous.injuryStatus === nextInjuryStatus) continue;
+
+    changes.push({
+      name: player.name || previous.name || "Unknown player",
+      fromStatus: previous.status,
+      toStatus: nextStatus,
+      toInjuryStatus: nextInjuryStatus,
+    });
+  }
+
+  return changes;
 }
 
 export default function HomePage() {
@@ -30,6 +65,9 @@ export default function HomePage() {
   const toast = useToast();
   const [confirmingUndo, setConfirmingUndo] = useState(false);
   const [undoing, setUndoing] = useState(false);
+  const statusSnapshotRef = useRef(new Map());
+  const hasStatusBaselineRef = useRef(false);
+  const latestPlayersRef = useRef([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,7 +78,10 @@ export default function HomePage() {
         setError("");
         const data = await fetchPlayers();
         if (!cancelled) {
-          setPlayers(Array.isArray(data) ? data : []);
+          const nextPlayers = Array.isArray(data) ? data : [];
+          setPlayers(nextPlayers);
+          statusSnapshotRef.current = buildStatusSnapshot(nextPlayers);
+          hasStatusBaselineRef.current = true;
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -59,6 +100,58 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    latestPlayersRef.current = players;
+  }, [players]);
+
+  useEffect(() => {
+    if (!draftId) return undefined;
+
+    let cancelled = false;
+    let pollTimer = null;
+
+    // Reset baseline on draft activation/switch so we only notify on new changes.
+    statusSnapshotRef.current = buildStatusSnapshot(latestPlayersRef.current);
+    hasStatusBaselineRef.current = true;
+
+    async function pollPlayersForStatusUpdates() {
+      try {
+        const data = await fetchPlayers();
+        if (cancelled) return;
+
+        const nextPlayers = Array.isArray(data) ? data : [];
+        const nextSnapshot = buildStatusSnapshot(nextPlayers);
+
+        if (hasStatusBaselineRef.current) {
+          const changes = detectStatusChanges(statusSnapshotRef.current, nextPlayers);
+          for (const change of changes) {
+            const injuryDetail = change.toInjuryStatus ? ` (${change.toInjuryStatus})` : "";
+            const message = `${change.name} status changed: ${change.fromStatus} -> ${change.toStatus}${injuryDetail}`;
+            const lowerStatus = String(change.toStatus).toLowerCase();
+            if (lowerStatus === "injured" || lowerStatus === "suspended" || lowerStatus === "restricted") {
+              toast.warning(message);
+            } else {
+              toast.info(message);
+            }
+          }
+        }
+
+        setPlayers(nextPlayers);
+        statusSnapshotRef.current = nextSnapshot;
+        hasStatusBaselineRef.current = true;
+      } catch {
+        // Silent fail: we do not want polling errors to spam toasts.
+      }
+    }
+
+    pollTimer = setInterval(pollPlayersForStatusUpdates, 30000);
+
+    return () => {
+      cancelled = true;
+      if (pollTimer) clearInterval(pollTimer);
+    };
+  }, [draftId, toast]);
 
   useEffect(() => {
     let cancelled = false;
