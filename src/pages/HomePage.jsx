@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchPlayers, fetchPlayerValuation, undoLastPick } from "../services/api";
+import { fetchPlayers, fetchPlayersValuationsAll, undoLastPick } from "../services/api";
 import { DraftContext } from "../context/DraftContext";
 import { useToast } from "../context/ToastContext";
 import "./HomePage.css";
@@ -168,22 +168,24 @@ export default function HomePage() {
         .map((id) => String(id))
         .filter((id) => !draftedPlayerIds.has(id));
 
-      const results = await Promise.allSettled(
-        ids.map(async (id) => {
-          const data = await fetchPlayerValuation(id);
-          return { id, value: data?.value };
-        })
-      );
+      try {
+        const data = await fetchPlayersValuationsAll(ids);
+        if (cancelled) return;
 
-      if (cancelled) return;
-
-      const next = {};
-      for (const r of results) {
-        if (r.status === "fulfilled" && r.value && r.value.id) {
-          next[r.value.id] = r.value.value;
+        const requestedIds = new Set(ids);
+        const next = {};
+        for (const row of data?.values || []) {
+          const id = String(row.playerId);
+          if (requestedIds.has(id) && Number.isFinite(row.value)) {
+            next[id] = row.value;
+          }
+        }
+        setValuations(next);
+      } catch {
+        if (!cancelled) {
+          setValuations({});
         }
       }
-      setValuations(next);
     }
 
     loadValuations();

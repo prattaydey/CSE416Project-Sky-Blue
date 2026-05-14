@@ -6,68 +6,160 @@ const Draft = require("../models/draft.model");
 
 const router = express.Router();
 
-router.get("/:playerId/valuation", authMiddleware, async (req, res, next) => {
+function isPitchingPosition(position) {
+  const pos = String(position || "").toUpperCase();
+  return pos === "P" || pos === "SP" || pos === "RP" || pos === "CL" || pos.includes("P");
+}
+
+function buildRosterSpots(rosterSlots) {
+  if (!Array.isArray(rosterSlots)) {
+    return undefined;
+  }
+
+  let hitters = 0;
+  let pitchers = 0;
+  for (const slot of rosterSlots) {
+    const count = Number(slot?.count);
+    if (!Number.isFinite(count) || count <= 0) continue;
+
+    if (isPitchingPosition(slot?.position)) {
+      pitchers += Math.floor(count);
+    } else {
+      hitters += Math.floor(count);
+    }
+  }
+
+  return hitters > 0 && pitchers > 0 ? { hitters, pitchers } : undefined;
+}
+
+function buildDraftedPlayers(draft) {
+  return (draft.pickHistory || [])
+    .map((pick) => ({
+      playerId: Number(pick.playerId),
+      price: Number(pick.price),
+      position: pick.position,
+    }))
+    .filter((p) => Number.isInteger(p.playerId) && Number.isFinite(p.price) && p.price >= 0);
+}
+
+function buildValuationPayload(draft, extra = {}) {
+  const rosterSpots = buildRosterSpots(draft.rosterSlots || []);
+  const categories = draft.statCategories
+    ? {
+        hitters: draft.statCategories.hitters || [],
+        pitchers: draft.statCategories.pitchers || [],
+      }
+    : undefined;
+
+  return {
+    ...extra,
+    leagueSettings: {
+      budget: Number(draft.budgetPerTeam),
+      teams: Number(draft.numberOfTeams),
+      scoringSystem: "roto",
+      ...(rosterSpots ? { rosterSpots } : {}),
+      ...(categories ? { categories } : {}),
+    },
+    draftState: {
+      playersDrafted: buildDraftedPlayers(draft),
+    },
+  };
+}
+
+async function loadActiveDraft(userId) {
+  const user = await User.findById(userId).select("activeDraft");
+  if (!user?.activeDraft) {
+    return { errorStatus: 400, error: "No active draft selected" };
+  }
+
+  const draft = await Draft.findById(user.activeDraft).select(
+    "numberOfTeams budgetPerTeam rosterSlots statCategories pickHistory"
+  );
+  if (!draft) {
+    return { errorStatus: 404, error: "Draft not found" };
+  }
+
+  return { draft };
+}
+
+async function requestDraftKitValuation(path, body) {
+  if (!env.draftKitAppClientKey) {
+    return { status: 500, payload: { error: "Missing DRAFTKIT_APP_CLIENT_KEY on client backend" } };
+  }
+
+  const base = String(env.draftKitApiUrl || "").replace(/\/+$/, "");
+  const upstream = await fetch(`${base}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.draftKitAppClientKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const text = await upstream.text();
+  let payload = null;
   try {
-    const playerId = String(req.params.playerId || "").trim();
-    if (!playerId) {
-      return res.status(400).json({ error: "playerId is required" });
-    }
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
 
-    if (!env.draftKitAppClientKey) {
-      return res.status(500).json({ error: "Missing DRAFTKIT_APP_CLIENT_KEY on client backend" });
-    }
+  return {
+    ok: upstream.ok,
+    status: upstream.status,
+    payload,
+  };
+}
 
-    const user = await User.findById(req.user.id).select("activeDraft");
-    if (!user?.activeDraft) {
-      return res.status(400).json({ error: "No active draft selected" });
-    }
-
-    const draft = await Draft.findById(user.activeDraft).select("numberOfTeams budgetPerTeam rosterSlots pickHistory");
+router.post("/valuation/all", authMiddleware, async (req, res, next) => {
+  try {
+    const { draft, errorStatus, error } = await loadActiveDraft(req.user.id);
     if (!draft) {
-      return res.status(404).json({ error: "Draft not found" });
+      return res.status(errorStatus).json({ error });
     }
 
-    const drafted = (draft.pickHistory || [])
-      .map((pick) => ({
-        playerId: Number(pick.playerId),
-        price: Number(pick.price),
-        position: pick.position,
-      }))
-      .filter((p) => Number.isInteger(p.playerId) && Number.isFinite(p.price) && p.price >= 0);
+    const playerIds = Array.isArray(req.body?.playerIds)
+      ? req.body.playerIds.map(Number).filter((id) => Number.isInteger(id))
+      : undefined;
 
-    const qs = new URLSearchParams();
-    qs.set("budget", String(draft.budgetPerTeam));
-    qs.set("teams", String(draft.numberOfTeams));
-    qs.set("drafted", JSON.stringify(drafted));
-    qs.set("rosterSlots", JSON.stringify(draft.rosterSlots || []));
-
-    const base = String(env.draftKitApiUrl || "").replace(/\/+$/, "");
-    const url = `${base}/api/players/${encodeURIComponent(playerId)}/valuation?${qs.toString()}`;
-
-    const upstream = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${env.draftKitAppClientKey}`,
-      },
-    });
-
-    const text = await upstream.text();
-    let payload = null;
-    try {
-      payload = text ? JSON.parse(text) : null;
-    } catch {
-      payload = null;
-    }
+    const payload = buildValuationPayload(draft, playerIds ? { playerIds } : {});
+    const upstreamPath = playerIds ? "/api/players/value" : "/api/players/value/all";
+    const upstream = await requestDraftKitValuation(upstreamPath, payload);
 
     if (!upstream.ok) {
-      return res.status(upstream.status).json(payload || { error: "Upstream valuation request failed" });
+      return res.status(upstream.status).json(upstream.payload || { error: "Upstream valuation request failed" });
     }
 
-    return res.json(payload);
+    return res.json(upstream.payload);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/:playerId/valuation", authMiddleware, async (req, res, next) => {
+  try {
+    const playerId = Number(String(req.params.playerId || "").trim());
+    if (!Number.isInteger(playerId)) {
+      return res.status(400).json({ error: "playerId must be a numeric MLB integer ID" });
+    }
+
+    const { draft, errorStatus, error } = await loadActiveDraft(req.user.id);
+    if (!draft) {
+      return res.status(errorStatus).json({ error });
+    }
+
+    const payload = buildValuationPayload(draft, { playerId });
+    const upstream = await requestDraftKitValuation("/api/player/value", payload);
+
+    if (!upstream.ok) {
+      return res.status(upstream.status).json(upstream.payload || { error: "Upstream valuation request failed" });
+    }
+
+    return res.json(upstream.payload);
   } catch (error) {
     return next(error);
   }
 });
 
 module.exports = router;
-

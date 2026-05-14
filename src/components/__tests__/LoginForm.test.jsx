@@ -55,7 +55,7 @@ describe("LoginForm", () => {
       id: "u1",
       username: "skyblue",
     });
-    expect(navigateMock).toHaveBeenCalledWith("/");
+    expect(navigateMock).toHaveBeenCalledWith("/app");
   });
 
   it("shows an error when login fails", async () => {

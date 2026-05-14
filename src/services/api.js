@@ -89,6 +89,19 @@ export async function fetchPlayerValuation(playerId) {
   });
 }
 
+
+export async function fetchPlayersValuationsAll(playerIds = []) {
+  return requestJson(CLIENT_BACKEND_URL, "/api/players/valuation/all", {
+    method: "POST",
+    userAuth: true,
+    body: { playerIds },
+    statusMessages: {
+      400: "No active draft selected.",
+      401: "Unauthorized - please log in again.",
+      404: "Draft not found.",
+    },
+  });
+}
 export async function createCustomPlayer(payload) {
   return requestJson(API_BASE_URL, "/api/players", {
     method: "POST",
