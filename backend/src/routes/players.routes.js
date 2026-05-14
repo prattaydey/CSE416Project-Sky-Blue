@@ -6,6 +6,17 @@ const Draft = require("../models/draft.model");
 
 const router = express.Router();
 
+const ALLOWED_ROTO_CATEGORIES = {
+  hitters: new Set(["BA", "OBP", "HR", "R", "RBI", "SB", "H"]),
+  pitchers: new Set(["ERA", "WHIP", "W", "SV", "K", "QS"]),
+};
+
+const CATEGORY_ALIASES = {
+  AVG: "BA",
+  RB: "RBI",
+  SO: "K",
+};
+
 function isPitchingPosition(position) {
   const pos = String(position || "").toUpperCase();
   return pos === "P" || pos === "SP" || pos === "RP" || pos === "CL" || pos.includes("P");
@@ -42,14 +53,30 @@ function buildDraftedPlayers(draft) {
     .filter((p) => Number.isInteger(p.playerId) && Number.isFinite(p.price) && p.price >= 0);
 }
 
+function normalizeCategoriesForRole(categories, role) {
+  if (!Array.isArray(categories)) {
+    return [];
+  }
+
+  const allowed = ALLOWED_ROTO_CATEGORIES[role];
+  return Array.from(new Set(
+    categories
+      .map((category) => String(category || "").trim().toUpperCase())
+      .map((category) => CATEGORY_ALIASES[category] || category)
+      .filter((category) => allowed.has(category))
+  ));
+}
+
+function buildCategories(statCategories) {
+  const hitters = normalizeCategoriesForRole(statCategories?.hitters, "hitters");
+  const pitchers = normalizeCategoriesForRole(statCategories?.pitchers, "pitchers");
+
+  return hitters.length > 0 && pitchers.length > 0 ? { hitters, pitchers } : undefined;
+}
+
 function buildValuationPayload(draft, extra = {}) {
   const rosterSpots = buildRosterSpots(draft.rosterSlots || []);
-  const categories = draft.statCategories
-    ? {
-        hitters: draft.statCategories.hitters || [],
-        pitchers: draft.statCategories.pitchers || [],
-      }
-    : undefined;
+  const categories = buildCategories(draft.statCategories);
 
   return {
     ...extra,
@@ -122,6 +149,10 @@ router.post("/valuation/all", authMiddleware, async (req, res, next) => {
     const playerIds = Array.isArray(req.body?.playerIds)
       ? req.body.playerIds.map(Number).filter((id) => Number.isInteger(id))
       : undefined;
+
+    if (Array.isArray(playerIds) && playerIds.length === 0) {
+      return res.json({ values: [] });
+    }
 
     const payload = buildValuationPayload(draft, playerIds ? { playerIds } : {});
     const upstreamPath = playerIds ? "/api/players/value" : "/api/players/value/all";

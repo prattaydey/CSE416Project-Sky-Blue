@@ -168,6 +168,11 @@ export default function HomePage() {
         .map((id) => String(id))
         .filter((id) => !draftedPlayerIds.has(id));
 
+      if (ids.length === 0) {
+        setValuations({});
+        return;
+      }
+
       try {
         const data = await fetchPlayersValuationsAll(ids);
         if (cancelled) return;
