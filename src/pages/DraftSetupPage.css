@@ -184,6 +184,110 @@
   }
 }
 
+/* Stat Categories Styles */
+.draft-stat-categories-section {
+  margin-top: 32px;
+}
+
+.draft-stat-categories-section > h4 {
+  margin: 0 0 4px;
+  color: #0f2b3c;
+}
+
+.draft-stat-categories-section > p {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.stat-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stat-category-group {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.stat-category-group h5 {
+  margin: 0 0 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.stats-checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat-checkbox-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  user-select: none;
+  transition: background 140ms ease, border-color 140ms ease,
+    color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.stat-checkbox-item input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.stat-checkbox-item:hover {
+  border-color: #5ba4c9;
+  color: #0f2b3c;
+}
+
+.stat-checkbox-item:has(input:checked) {
+  background: #0f2b3c;
+  border-color: #0f2b3c;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 43, 60, 0.18);
+}
+
+.stat-checkbox-item:has(input:checked):hover {
+  background: #15384e;
+  border-color: #15384e;
+}
+
+.stat-checkbox-item:focus-within {
+  outline: 2px solid #5ba4c9;
+  outline-offset: 2px;
+}
+
+.stat-checkbox-item:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  .stat-category-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Taxi Roster Styles */
 .taxi-roster-section {
   margin-top: 20px;
